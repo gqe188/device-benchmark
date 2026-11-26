@@ -156,12 +156,12 @@
     .world[data-tint="1"] .shade { background: rgba(0, 12, 48, .62); }
     .world[data-tint="2"] .shade { background: rgba(48, 0, 4, .6); }
     .world[data-tint="3"] .shade { background: rgba(0, 30, 12, .62); }
-    .world.inv .shade { background: rgba(255, 0, 200, .42); }
+    .world.inv .shade { background: rgba(150, 0, 120, .5); }
     .world.inv .bg { transform: scale(1.35) scaleX(-1); }
     .rays {
       position: absolute; left: 50%; top: 50%; width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax;
       background: repeating-conic-gradient(#ffee00 0 9deg, transparent 9deg 18deg, #ff00c8 18deg 27deg, transparent 27deg 36deg);
-      opacity: .1; animation: spin 7s linear infinite; pointer-events: none; will-change: transform;
+      opacity: .08; animation: spin 16s linear infinite; pointer-events: none; will-change: transform;
     }
     .lite .rays, .lite .grain { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -213,8 +213,8 @@
     }
     .ticker.top { top: 0; padding-top: env(safe-area-inset-top, 0px); border-bottom: 4px solid #ff0019; }
     .ticker.bottom { bottom: 0; padding-bottom: env(safe-area-inset-bottom, 0px); border-top: 4px solid #00e5ff; color: #fff; }
-    .ticker span { display: inline-block; animation: tick 3.2s linear infinite; }
-    .ticker.bottom span { animation-direction: reverse; animation-duration: 4.1s; }
+    .ticker span { display: inline-block; animation: tick 9s linear infinite; }
+    .ticker.bottom span { animation-direction: reverse; animation-duration: 11s; }
     @keyframes tick { to { transform: translateX(-50%); } }
     .grain {
       position: absolute; inset: -160px; pointer-events: none; opacity: .09;
@@ -744,12 +744,12 @@
       el.className = "meme";
       el.style.width = w + "px"; el.style.height = h + "px";
       memeBox.appendChild(el);
-      var speed = rand(120, 320), ang = rand(0, Math.PI * 2);
+      var speed = rand(70, 180), ang = rand(0, Math.PI * 2);
       var m = {
         el: el, w: w, h: h,
         x: x == null ? rand(0, W - w) : x - w / 2, y: y == null ? rand(0, H - h) : y - h / 2,
         vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed,
-        r: rand(-25, 25), vr: rand(-120, 120), born: performance.now(),
+        r: rand(-20, 20), vr: rand(-50, 50), born: performance.now(),
       };
       if (memes.length >= maxMemes()) { var old = memes.shift(); old.el.remove(); }
       memes.push(m);
@@ -834,18 +834,17 @@
     }
 
     function onBeat(k) {
-      world.setAttribute("data-tint", k % 4);
-      if (k % 2 === 0) { nextHero(); explode(edgeX(), rand(.15, .85) * H, rand(.3, .5)); }
-      if (k % 4 === 1) nextBackdrop();
-      if (k % 4 === 3) pop(pick(POPS));
-      if (k % 2 === 1 && k > 2) spawnMeme();
+      if (k % 4 === 0) { world.setAttribute("data-tint", (k / 4) % 4); nextHero(); explode(edgeX(), rand(.15, .85) * H, rand(.3, .5)); }
+      if (k % 8 === 2) nextBackdrop();
+      if (k % 4 === 2) pop(pick(POPS));
+      if (k % 4 === 1 && k > 2) spawnMeme();
       if (k % 4 === 0) $("chant").textContent = CHANTS[chi++ % CHANTS.length];
-      if (k % 8 === 4) fireball();
-      if (k % 2 === 1) emojiBurst(edgeX(), rand(.3, .7) * H, 2, .6);
+      if (k % 16 === 8) fireball();
+      if (k % 4 === 3) emojiBurst(edgeX(), rand(.3, .7) * H, 2, .6);
       if (k > 0 && k % 16 === 0) drop();
     }
     function drop() {
-      kick = .8;
+      kick = .5;
       invertUntil = performance.now() + BEAT * 1000;
       world.classList.add("inv");
       boom();
@@ -874,9 +873,9 @@
       fx.clearRect(0, 0, W, H);
       drawFire();
       // 冲击放射线
-      if (kick > .12) {
+      if (kick > .2) {
         fx.save();
-        fx.globalAlpha = Math.min(.45, kick * .5);
+        fx.globalAlpha = Math.min(.28, kick * .3);
         fx.fillStyle = "#fff";
         var cx = W / 2, cy = H / 2, R = Math.max(W, H);
         for (var i = 0; i < 28; i++) {
@@ -934,12 +933,13 @@
       kick *= Math.pow(.015, dt);
       if (invertUntil && now > invertUntil) { invertUntil = 0; world.classList.remove("inv"); }
 
-      var amp = 2 + 6 * pulse * pulse + 22 * kick;
-      world.style.transform = "translate3d(" + rand(-amp, amp).toFixed(1) + "px," + rand(-amp, amp).toFixed(1) + "px,0) rotate(" +
-        rand(-1, 1) * (.3 + 2 * kick) + "deg) scale(" + (1 + .02 * pulse + .04 * kick) + ")";
+      // 平滑摆动，只有点击/高潮时才真抖，避免每帧随机抖动晃眼
+      var amp = 14 * kick;
+      world.style.transform = "translate3d(" + (Math.sin(t * 1.7) * 3 + rand(-amp, amp)).toFixed(1) + "px," + (Math.cos(t * 1.3) * 3 + rand(-amp, amp)).toFixed(1) + "px,0) rotate(" +
+        (rand(-1, 1) * 1.2 * kick).toFixed(2) + "deg) scale(" + (1 + .012 * pulse + .03 * kick).toFixed(4) + ")";
       var hage = (now - heroBorn) / 1000;
-      var sc = (hage < .16 ? 1.35 - .35 * hage / .16 : 1) * (1 + .07 * pulse + .15 * kick);
-      stack.style.transform = "rotate(" + (Math.sin(t * 2.3) * 4 + (beats % 2 ? 2.5 : -2.5)) + "deg) scale(" + sc.toFixed(3) + ")";
+      var sc = (hage < .2 ? 1.18 - .18 * hage / .2 : 1) * (1 + .035 * pulse + .1 * kick);
+      stack.style.transform = "rotate(" + (Math.sin(t * 1.4) * 3) + "deg) scale(" + sc.toFixed(3) + ")";
 
       for (var i = 0; i < memes.length; i++) {
         var m = memes[i];
@@ -947,7 +947,7 @@
         if (m.x < 0) { m.x = 0; m.vx = Math.abs(m.vx); } else if (m.x > W - m.w) { m.x = W - m.w; m.vx = -Math.abs(m.vx); }
         if (m.y < 0) { m.y = 0; m.vy = Math.abs(m.vy); } else if (m.y > H - m.h) { m.y = H - m.h; m.vy = -Math.abs(m.vy); }
         var age = (now - m.born) / 1000;
-        var s = (age < .22 ? 3.2 - 2.2 * age / .22 : 1) * (1 + .14 * pulse);
+        var s = (age < .25 ? 2.2 - 1.2 * age / .25 : 1) * (1 + .05 * pulse);
         m.el.style.transform = "translate3d(" + m.x.toFixed(1) + "px," + m.y.toFixed(1) + "px,0) rotate(" + m.r.toFixed(1) + "deg) scale(" + s.toFixed(3) + ")";
       }
       frameNo++;
@@ -1001,7 +1001,7 @@
       $("t1").textContent = "67 6767676767676767676767676767 SIX SEVEN 67 ".repeat(10);
       $("t2").textContent = "检测结果：67 · 综合得分：67 · GTA VI 画质：67 · ".repeat(8);
       zoom67(origin);
-      flash(1);
+      flash(.6);
       kick = 1;
       for (var i = 0; i < 4; i++) (function (i) { setTimeout(function () { spawnMeme(); }, 90 + i * 150); })(i);
       explode(edgeX(), H * .3, .8);
