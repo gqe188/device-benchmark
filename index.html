@@ -648,7 +648,8 @@
     var party = $("party"), world = $("world"), stack = $("stack"), memeBox = $("memes"), pops = $("pops");
     var bg = $("bg"), fire = $("fire"), fxCanvas = $("fx"), fx = fxCanvas.getContext("2d"), grain = $("grain"), flashEl = $("flash");
     var Q = .4;  // 特效画布 0.4 倍分辨率，故意糊
-    var W = 0, H = 0, memes = [], booms = [], parts = [], bolts = [];
+    var W = 0, H = 0, memes = [], booms = [], parts = [], bolts = [], sparks = [], shocks = [];
+    var SPARK_COLORS = ["#fff6a0", "#ffd000", "#ff7a00", "#ff2a00", "#ffffff"];
     var kick = 0, beats = 0, lastBeat = null, revealAt = 0, lastFrame = 0, bgi = 0, chi = 0, mi = 0, invertUntil = 0;
     var heroImgs = [], hi = 0, heroBorn = 0;
     // 手机默认精简模式；桌面端如果实测掉帧也会自动切过去
@@ -755,12 +756,44 @@
       memes.push(m);
     }
 
-    function explode(x, y, scale) {
-      var sheet = SHEETS[Math.random() < .5 ? 0 : 1];
-      if (!sheet.image) return;
-      booms.push({ x: x, y: y, d: Math.min(W, H) * (scale || rand(.35, .8)), t: performance.now(), s: sheet });
-      if (booms.length > 14) booms.shift();
+    // 爆炸：序列帧 + 像素火星 + 冲击波环。特效画布在中间大卡片下面，所以只会从卡片后面炸出来
+    function explode(x, y, scale, big) {
+      var sheet = SHEETS[big || Math.random() < .6 ? 1 : 0];
+      var d = Math.min(W, H) * (scale || rand(.4, .7));
+      if (sheet.image) {
+        booms.push({ x: x, y: y, d: d, t: performance.now(), s: sheet, rot: Math.random() < .5 });
+        if (booms.length > 18) booms.shift();
+      }
+      var n = (LITE ? 8 : 14) + (big ? 10 : 0);
+      for (var i = 0; i < n; i++) {
+        var a = rand(0, Math.PI * 2), v = rand(250, 900) * (scale || .6);
+        sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 120, life: rand(.35, .8), c: pick(SPARK_COLORS), s: rand(5, 11) });
+      }
+      var cap = LITE ? 70 : 140;
+      if (sparks.length > cap) sparks.splice(0, sparks.length - cap);
+      if (big) shock(x, y, d * 1.1);
     }
+    function shock(x, y, r) {
+      shocks.push({ x: x, y: y, r: r, t: performance.now() });
+      if (shocks.length > 6) shocks.shift();
+    }
+    // 在中间大卡片的边框上取一点（略往外），爆炸就像从卡片后面炸出来；竖屏优先上下边，横屏优先左右边
+    var HR = null;
+    function heroRect() {
+      var r = $("hero").getBoundingClientRect(), w = world.getBoundingClientRect();
+      if (r.width < 10) return { x: W * .2, y: H * .2, w: W * .6, h: H * .6 };
+      return { x: r.left - w.left, y: r.top - w.top, w: r.width, h: r.height };
+    }
+    function rim(side) {
+      var R = HR || (HR = heroRect());
+      if (side == null) side = pick(W < H ? [0, 2, 0, 2, 1, 3] : [1, 3, 1, 3, 0, 2]);
+      var t = rand(.05, .95), out = Math.min(W, H) * rand(0, .07);
+      if (side === 0) return [R.x + t * R.w, R.y - out];
+      if (side === 1) return [R.x + R.w + out, R.y + t * R.h];
+      if (side === 2) return [R.x + t * R.w, R.y + R.h + out];
+      return [R.x - out, R.y + t * R.h];
+    }
+    function blastAt(pt, scale, big) { explode(pt[0], pt[1], scale, big); }
     function emojiBurst(x, y, n, power) {
       if (LITE) n = Math.ceil(n / 2);
       for (var i = 0; i < n; i++) {
@@ -834,7 +867,16 @@
     }
 
     function onBeat(k) {
-      if (k % 4 === 0) { world.setAttribute("data-tint", (k / 4) % 4); nextHero(); explode(edgeX(), rand(.15, .85) * H, rand(.3, .5)); }
+      var pair = W < H ? [0, 2] : [3, 1];
+      if (k % 2 === 0) blastAt(rim(pair[(k / 2) % 2]), rand(.5, .75));
+      if (k % 4 === 0) {
+        world.setAttribute("data-tint", (k / 4) % 4);
+        nextHero();
+        // 换图时左右各炸一个大的 + 从卡片后面扩散出一圈冲击波
+        blastAt(rim(pair[0]), rand(.7, .95), true);
+        blastAt(rim(pair[1]), rand(.7, .95), true);
+        shock(W / 2, H / 2, Math.min(W, H) * .75);
+      }
       if (k % 8 === 2) nextBackdrop();
       if (k % 4 === 2) pop(pick(POPS));
       if (k % 4 === 1 && k > 2) spawnMeme();
@@ -850,8 +892,10 @@
       boom();
       buzz([180, 60, 180]);
       bolt();
-      explode(edgeX(), rand(.2, .8) * H, rand(.5, .8));
-      explode(edgeX(), rand(.2, .8) * H, rand(.5, .8));
+      // 高潮：沿四周炸一圈，再叠两道冲击波
+      [0, 1, 2, 3, 0, 2].forEach(function (side) { blastAt(rim(side), rand(.75, 1.05), true); });
+      shock(W / 2, H / 2, Math.max(W, H) * .7);
+      setTimeout(function () { shock(W / 2, H / 2, Math.max(W, H) * .9); }, 140);
       emojiBurst(W / 2, H / 2, 12, 1.2);
       spawnMeme();
     }
@@ -860,7 +904,7 @@
       boom();
       airhorn(0, true);
       buzz(90);
-      explode(x, y, rand(.5, .8));
+      explode(x, y, rand(.8, 1.05), true);
       emojiBurst(x, y, 8, 1);
       spawnMeme(x, y);
       nextHero();
@@ -902,13 +946,37 @@
         fx.strokeStyle = "#fff"; fx.lineWidth = 4; fx.stroke();
         fx.restore();
       }
+      // 冲击波环
+      for (var w = shocks.length - 1; w >= 0; w--) {
+        var sk = shocks[w], sa = (now - sk.t) / 450;
+        if (sa >= 1) { shocks.splice(w, 1); continue; }
+        var ease = 1 - Math.pow(1 - sa, 3);
+        fx.globalAlpha = 1 - sa;
+        fx.beginPath();
+        fx.arc(sk.x, sk.y, sk.r * (.15 + .85 * ease), 0, Math.PI * 2);
+        fx.strokeStyle = "#ffe36b"; fx.lineWidth = 30 * (1 - sa) + 4; fx.stroke();
+        fx.strokeStyle = "#fff"; fx.lineWidth = 10 * (1 - sa) + 2; fx.stroke();
+      }
+      fx.globalAlpha = 1;
       // 爆炸序列帧
       for (var k = booms.length - 1; k >= 0; k--) {
         var e = booms[k], s = e.s, frames = s.image.naturalWidth / s.size;
         var f = Math.floor((now - e.t) / 1000 * 18);
         if (f >= frames) { booms.splice(k, 1); continue; }
-        fx.drawImage(s.image, f * s.size, 0, s.size, s.size, e.x - e.d / 2, e.y - e.d / 2, e.d, e.d);
+        if (e.rot) { fx.save(); fx.translate(e.x, e.y); fx.scale(-1, 1); fx.drawImage(s.image, f * s.size, 0, s.size, s.size, -e.d / 2, -e.d / 2, e.d, e.d); fx.restore(); }
+        else fx.drawImage(s.image, f * s.size, 0, s.size, s.size, e.x - e.d / 2, e.y - e.d / 2, e.d, e.d);
       }
+      // 像素火星（叠加发光）
+      fx.globalCompositeOperation = "lighter";
+      for (var z = sparks.length - 1; z >= 0; z--) {
+        var sp = sparks[z];
+        sp.life -= dt;
+        if (sp.life <= 0) { sparks.splice(z, 1); continue; }
+        sp.vx *= .96; sp.vy = sp.vy * .96 + 600 * dt; sp.x += sp.vx * dt; sp.y += sp.vy * dt;
+        fx.fillStyle = sp.c;
+        fx.fillRect(sp.x - sp.s / 2, sp.y - sp.s / 2, sp.s, sp.s);
+      }
+      fx.globalCompositeOperation = "source-over";
       // 表情包粒子
       for (var p = parts.length - 1; p >= 0; p--) {
         var pt = parts[p];
@@ -1004,8 +1072,8 @@
       flash(.6);
       kick = 1;
       for (var i = 0; i < 4; i++) (function (i) { setTimeout(function () { spawnMeme(); }, 90 + i * 150); })(i);
-      explode(edgeX(), H * .3, .8);
-      explode(edgeX(), H * .7, .8);
+      [0, 1, 2, 3].forEach(function (side) { blastAt(rim(side), rand(.85, 1.1), true); });
+      shock(W / 2, H / 2, Math.max(W, H) * .8);
       emojiBurst(W / 2, H / 2, 16, 1.3);
 
       var titles = ["67 67 67 67 67 67", "6 7 6 7 6 7 6 7", "🔥67🔥67🔥67🔥", "SIX SEVEN!!!"], ti = 0;
@@ -1018,7 +1086,8 @@
         smash(ev.clientX - r.left, ev.clientY - r.top);
       });
       document.addEventListener("keydown", function () { smash(W / 2, H / 2); });
-      window.addEventListener("resize", measure);
+      window.addEventListener("resize", function () { measure(); HR = null; });
+      setTimeout(function () { HR = null; }, 800);
       requestAnimationFrame(frame);
     }
   })();
