@@ -3,103 +3,139 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>AI 设备性能检测 · 你的设备能流畅运行 GTA VI 吗？</title>
-  <meta name="description" content="约 6 秒测出 GPU、CPU 与真实帧率，并给出 GTA VI 推荐画质。数据仅在本机计算。">
-  <meta property="og:title" content="AI 设备性能检测 · 你的设备能流畅运行 GTA VI 吗？">
-  <meta property="og:description" content="约 6 秒测出 GPU、CPU 与真实帧率，并给出 GTA VI 推荐画质。">
-  <meta name="theme-color" content="#f1f0e9">
-  <link rel="icon" id="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23233329'/%3E%3Ctext x='16' y='21' font-family='Consolas,monospace' font-size='13' font-weight='700' fill='%23d1f365' text-anchor='middle'%3EAI%3C/text%3E%3C/svg%3E">
+  <title>FrameLab · 你的设备能流畅运行 GTA VI 吗？</title>
+  <meta name="description" content="在浏览器里实测 GPU、CPU 与真实帧率，约 10 秒给出综合得分与 GTA VI 推荐画质。免安装，数据不出本机。">
+  <meta property="og:title" content="FrameLab · 你的设备能流畅运行 GTA VI 吗？">
+  <meta property="og:description" content="约 10 秒实测 GPU、CPU 与真实帧率，给出 GTA VI 推荐画质。">
+  <meta name="theme-color" content="#0a0c0f">
+  <link rel="icon" id="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e1216'/%3E%3Cpath d='M7 21 L12 14 L16 18 L21 9 L25 13' fill='none' stroke='%23c8ff3e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root {
-      color-scheme: light;
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: #f1f0e9;
-      color: #18251e;
+      color-scheme: dark;
+      --bg: #0a0c0f; --panel: #11151a; --panel2: #161b21; --line: #232b34; --text: #e9eef3; --muted: #8b97a4;
+      --accent: #c8ff3e; --accent2: #5ee1ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--text);
     }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
-    body { margin: 0; background: #f1f0e9; }
+    body { margin: 0; background: var(--bg); }
     button { font: inherit; cursor: pointer; }
-    button:focus-visible { outline: 3px solid #5a69ec; outline-offset: 5px; }
-    h1, h2, p { margin: 0; }
+    button:focus-visible { outline: 2px solid var(--accent2); outline-offset: 4px; }
+    h1, h2, h3, p, ul { margin: 0; }
+    ul { padding: 0; list-style: none; }
 
     /* ---------- 伪装页 ---------- */
-    .shell { width: min(1200px, 100% - 80px); margin-inline: auto; }
-    .masthead, .footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-    .masthead { min-height: 78px; border-bottom: 1px solid #cacfc4; }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 750; letter-spacing: .035em; }
-    .mark {
-      display: grid; place-items: center; width: 32px; height: 32px; border-radius: 7px;
-      background: #233329; color: #d1f365; font: 700 .8rem Consolas, monospace;
+    .site { position: relative; min-height: 100svh; overflow: hidden; isolation: isolate; }
+    .site::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(60% 50% at 80% 0%, #c8ff3e1c, transparent 70%),
+        radial-gradient(50% 40% at 0% 30%, #5ee1ff14, transparent 70%),
+        linear-gradient(#ffffff08 1px, transparent 1px) 0 0 / 48px 48px,
+        linear-gradient(90deg, #ffffff08 1px, transparent 1px) 0 0 / 48px 48px;
+      -webkit-mask-image: linear-gradient(#000 40%, transparent 95%); mask-image: linear-gradient(#000 40%, transparent 95%);
     }
-    .mono { font: 600 .79rem/1.5 Consolas, "Microsoft YaHei", monospace; letter-spacing: .1em; }
-    .mast-note, .footer { color: #586359; }
-    .intro {
-      display: grid; grid-template-columns: .93fr 1.07fr; align-items: center;
-      gap: clamp(28px, 5vw, 80px); padding-block: clamp(36px, 7vh, 90px);
+    .wrap { width: min(1180px, 100% - 64px); margin-inline: auto; }
+    .mono { font-family: "SF Mono", Consolas, "Cascadia Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 72px; border-bottom: 1px solid #ffffff0f; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .01em; }
+    .logo { width: 30px; height: 30px; border-radius: 8px; background: #0e1216; border: 1px solid var(--line); display: grid; place-items: center; }
+    .brand small { color: var(--muted); font-weight: 500; margin-left: 4px; }
+    .links { display: flex; gap: 26px; color: var(--muted); font-size: .9rem; }
+    .links span:first-child { color: var(--text); }
+    .ver { padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+    .ver b { color: var(--accent); font-weight: 600; }
+    .hero { display: grid; grid-template-columns: 1fr 470px; gap: clamp(28px, 5vw, 72px); align-items: center; padding-block: clamp(36px, 8vh, 88px) 40px; }
+    .kicker { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: #c8ff3e12; border: 1px solid #c8ff3e33; color: var(--accent); font-size: .82rem; font-weight: 600; }
+    .kicker i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: blink 1.6s infinite; }
+    @keyframes blink { 50% { opacity: .35; } }
+    h1 { margin: 22px 0 18px; font-size: clamp(2.5rem, 5.4vw, 4.6rem); line-height: 1.08; letter-spacing: -.035em; font-weight: 800; }
+    h1 em { font-style: normal; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lede { max-width: 34em; color: var(--muted); font-size: 1.06rem; line-height: 1.8; }
+    .cta-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 32px; }
+    .cta {
+      display: inline-flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 28px; border: 0; border-radius: 12px;
+      background: var(--accent); color: #0a0c0f; font-weight: 800; font-size: 1.05rem;
+      box-shadow: 0 10px 34px #c8ff3e40, inset 0 -2px 0 #0000002a; transition: transform .15s, box-shadow .15s;
     }
-    .eyebrow { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: .13em; font-size: .875rem; }
-    .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #54845b; }
-    .badge {
-      display: inline-block; margin-top: 18px; padding: 4px 10px; border-radius: 999px;
-      background: #233329; color: #d1f365; font-size: .82rem; font-weight: 700; letter-spacing: .04em;
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 14px 40px #c8ff3e59, inset 0 -2px 0 #0000002a; }
+    .cta:active { transform: translateY(1px); }
+    .cta:disabled { opacity: .55; cursor: default; transform: none; box-shadow: none; }
+    .eta { color: var(--muted); font-size: .88rem; }
+    .trust { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 30px; color: var(--muted); font-size: .86rem; }
+    .trust li { display: flex; align-items: center; gap: 7px; }
+    .trust li::before { content: "✓"; color: var(--accent); font-weight: 700; }
+    .trust b { color: var(--text); font-weight: 600; }
+    .card {
+      background: linear-gradient(180deg, #151a20, #0f1317); border: 1px solid var(--line); border-radius: 18px;
+      box-shadow: 0 30px 80px #00000080, inset 0 1px 0 #ffffff0d; padding: 22px;
     }
-    h1 { margin: 16px 0 20px; font-size: clamp(3.2rem, 6.2vw, 6.3rem); line-height: 1.05; letter-spacing: -.1em; font-weight: 900; }
-    h1 span { display: block; }
-    .blurb { max-width: 30ch; color: #46554b; line-height: 1.85; font-size: 1.06rem; }
-    .start, .progress { margin-top: 30px; min-height: 62px; width: min(100%, 321px); border-radius: 8px; }
-    .start {
-      display: flex; justify-content: space-between; align-items: center;
-      border: 1px solid #243620; background: #d1f365; box-shadow: 4px 4px 0 #243620;
-      font-weight: 800; padding: 0 20px; color: #18251e; transition: transform .2s, box-shadow .2s, background .2s;
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: .86rem; color: var(--muted); }
+    .card-head strong { color: var(--text); font-weight: 600; }
+    .status { padding: 4px 10px; border-radius: 999px; background: #ffffff0a; border: 1px solid var(--line); font-size: .76rem; }
+    .status.live { color: var(--accent); border-color: #c8ff3e44; background: #c8ff3e10; }
+    .gauge-row { display: grid; grid-template-columns: 168px 1fr; gap: 20px; align-items: center; margin: 18px 0 16px; }
+    .gauge { position: relative; width: 168px; height: 168px; }
+    .gauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .gauge .track { fill: none; stroke: #1d242c; stroke-width: 10; }
+    .gauge .arc { fill: none; stroke: url(#arcGrad); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 515.2; stroke-dashoffset: 515.2; transition: stroke-dashoffset .25s; filter: drop-shadow(0 0 6px #c8ff3e66); }
+    .gauge-center { position: absolute; inset: 0; display: grid; place-items: center; align-content: center; text-align: center; }
+    .pct { display: inline-block; font-size: 2.5rem; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+    .pct.twitch { animation: twitch .09s steps(2) infinite; color: #ff4d5e; }
+    @keyframes twitch { 50% { transform: translate(2px, -1px) rotate(-3deg) scale(1.08); } }
+    .gauge-label { margin-top: 6px; color: var(--muted); font-size: .74rem; max-width: 120px; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+    .stats div { padding: 10px 12px; border-radius: 10px; background: #0b0e12; border: 1px solid #1c232b; min-width: 0; }
+    .stats dt { color: var(--muted); font-size: .72rem; }
+    .stats dd { margin: 4px 0 0; font-size: 1.12rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stats dd.hl { color: var(--accent); }
+    .plot { height: 46px; display: grid; align-items: end; grid-template-columns: repeat(24, 1fr); gap: 3px; padding: 0 2px; border-bottom: 1px solid #1d242c; }
+    .plot i { height: var(--level, 4%); background: linear-gradient(var(--accent2), #5ee1ff40); border-radius: 2px 2px 0 0; transition: height .15s; }
+    .plot-cap { display: flex; justify-content: space-between; margin: 6px 0 14px; color: #66727e; font-size: .7rem; }
+    .stages { display: grid; gap: 2px; }
+    .stages li { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 10px; padding: 8px 4px; border-top: 1px solid #1a2027; font-size: .88rem; color: #6c7884; }
+    .stages li:first-child { border-top: 0; }
+    .stages .ico { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #2a333d; }
+    .stages li.run { color: var(--text); }
+    .stages li.run .ico { border-color: var(--accent) transparent var(--accent) var(--accent); animation: spin .7s linear infinite; }
+    .stages li.done { color: #c6ced6; }
+    .stages li.done .ico { border: 0; background: var(--accent); -webkit-mask: none; position: relative; }
+    .stages li.done .ico::after { content: ""; position: absolute; left: 4.5px; top: 2px; width: 4px; height: 7px; border: solid #0a0c0f; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+    .stages .val { font-size: .82rem; color: var(--muted); }
+    .stages li.done .val { color: var(--accent); }
+    .device { margin: 14px 0 0; padding-top: 14px; border-top: 1px dashed #232b34; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: .8rem; }
+    .device dt { color: #66727e; }
+    .device dd { margin: 0; text-align: right; color: #c6ced6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .board { padding-block: 10px 56px; }
+    .board-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+    .board-head h2 { font-size: 1.05rem; font-weight: 700; }
+    .board-head span { color: var(--muted); font-size: .82rem; }
+    .rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+    .row { padding: 14px 16px; border-radius: 12px; background: var(--panel); border: 1px solid #1c232b; }
+    .row b { display: block; font-size: .92rem; font-weight: 600; }
+    .row span { display: flex; justify-content: space-between; margin-top: 8px; color: var(--muted); font-size: .8rem; }
+    .row em { font-style: normal; color: var(--accent); }
+    .foot { display: flex; justify-content: space-between; gap: 16px; padding-block: 22px; border-top: 1px solid #ffffff0f; color: #5d6873; font-size: .78rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 960px) {
+      .hero { grid-template-columns: 1fr; }
+      .links { display: none; }
     }
-    .start:hover { background: #ddfa86; transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #243620; }
-    .start:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #243620; }
-    .start-icon { font-family: Consolas, monospace; font-size: 1.46rem; }
-    .progress { overflow: hidden; position: relative; isolation: isolate; border: 1px solid #afbba7; background: #e6ebdd; }
-    .fill { position: absolute; inset: 0; z-index: -1; background: #c9ed65; transform-origin: left; transform: scaleX(0); }
-    .readout { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 60px; padding: 0 16px; font-weight: 700; font-size: .92rem; }
-    .pct { font: 700 1rem Consolas, monospace; font-variant-numeric: tabular-nums; display: inline-block; }
-    .pct.twitch { animation: twitch .09s steps(2) infinite; color: #b3001b; }
-    @keyframes twitch { 50% { transform: translate(2px, -1px) rotate(-3deg) scale(1.15); } }
-    .social { margin-top: 16px; color: #586359; font-size: .86rem; }
-    .social b { font-family: Consolas, monospace; color: #18251e; }
-    .chart {
-      overflow: hidden; padding: clamp(14px, 2vw, 26px); border: 1px solid #293a2e; border-radius: 12px;
-      background: #152319; color: #f1f4e8; box-shadow: 0 14px 34px #142b2427;
-    }
-    .chart-head, .caption { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .chart-head { margin-bottom: 16px; }
-    .caption { margin: 8px 0 16px; color: #a5b8ac; }
-    .mode { color: #d8f97b; padding: 4px 7px; border: 1px solid #415e4b; border-radius: 4px; letter-spacing: .03em; }
-    .plot {
-      height: clamp(110px, 20vw, 210px); padding: 10px 8px 0; display: grid; align-items: end;
-      grid-template-columns: repeat(24, 1fr); gap: clamp(2px, .42vw, 6px);
-      background: repeating-linear-gradient(to top, #64807142 0 1px, transparent 1px 25%);
-      border-bottom: 1px solid #658071;
-    }
-    .plot i { height: var(--level, 0%); background: #bce852; transition: height .15s; }
-    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0; }
-    .metrics div, .score { min-width: 0; padding: 8px; border: 1px solid #395043; border-radius: 4px; background: #1a3023; }
-    .metrics dt, .score dt { color: #b6cbbe; font-size: .78rem; }
-    .metrics dd { color: #f5f8ed; font: 700 clamp(.9rem, 2vw, 1.3rem)/1.3 Consolas, monospace; margin: 6px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .scores { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0 0; }
-    .score dd { margin: 4px 0 0; color: #d8f97b; font: 800 clamp(1.3rem, 3vw, 2rem)/1.1 Consolas, monospace; font-variant-numeric: tabular-nums; }
-    .score dd.small { font-size: clamp(.95rem, 2vw, 1.2rem); line-height: 1.6; color: #f5f8ed; }
-    .device { margin: 14px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: .84rem; }
-    .device dt { color: #8fa597; }
-    .device dd { margin: 0; color: #e6eedc; font-family: Consolas, "Microsoft YaHei", monospace; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .footer { min-height: 64px; border-top: 1px solid #cacfc4; }
-    .footer span:last-child { text-align: right; }
-    @media (max-width: 760px) {
-      .shell { width: calc(100% - 32px); }
-      .masthead { min-height: 60px; }
-      .mast-note { letter-spacing: .02em; font-size: .7rem; }
-      .intro { grid-template-columns: 1fr; padding-block: 26px 26px; gap: 26px; }
-      h1 { margin: 12px 0 14px; }
-      h1 span { display: inline; }
-      .start, .progress { margin-top: 20px; }
-      .footer { min-height: 54px; letter-spacing: .02em; font-size: .7rem; }
+    @media (max-width: 560px) {
+      .wrap { width: calc(100% - 32px); }
+      .nav { min-height: 60px; }
+      .brand small, .ver { display: none; }
+      .hero { padding-block: 28px 28px; gap: 28px; }
+      h1 { margin: 18px 0 14px; }
+      .cta { width: 100%; justify-content: center; }
+      .eta { width: 100%; text-align: center; margin-top: -6px; }
+      .card { padding: 16px; border-radius: 16px; }
+      .gauge-row { grid-template-columns: 128px 1fr; gap: 14px; }
+      .gauge { width: 128px; height: 128px; }
+      .pct { font-size: 1.9rem; }
+      .stats dd { font-size: 1rem; }
+      .foot { flex-direction: column; }
     }
 
     /* ---------- 67 现场 ---------- */
@@ -114,21 +150,21 @@
     .world.inv { filter: invert(1) hue-rotate(180deg) saturate(3); }
     .bg {
       position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated;
-      filter: saturate(3.2) contrast(1.9) brightness(.8);
+      filter: blur(6px) saturate(2.6) contrast(1.5) brightness(.42); transform: scale(1.1);
     }
-    .world[data-tint="1"] .bg { filter: hue-rotate(70deg) saturate(4) contrast(2) brightness(.8); transform: scaleX(-1.12); }
-    .world[data-tint="2"] .bg { filter: sepia(.7) saturate(5) contrast(2.1) brightness(.85); transform: scale(1.25); }
-    .world[data-tint="3"] .bg { filter: hue-rotate(200deg) saturate(4) contrast(2) brightness(.75); transform: scale(1.1) rotate(4deg); }
+    .world[data-tint="1"] .bg { filter: blur(6px) hue-rotate(70deg) saturate(3) contrast(1.5) brightness(.42); transform: scale(1.1) scaleX(-1); }
+    .world[data-tint="2"] .bg { filter: blur(6px) sepia(.6) saturate(4) contrast(1.6) brightness(.45); transform: scale(1.25); }
+    .world[data-tint="3"] .bg { filter: blur(6px) hue-rotate(200deg) saturate(3) contrast(1.5) brightness(.4); transform: scale(1.15) rotate(4deg); }
     .rays {
       position: absolute; left: 50%; top: 50%; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax;
       background: repeating-conic-gradient(#ffee00 0 9deg, transparent 9deg 18deg, #ff00c8 18deg 27deg, transparent 27deg 36deg);
-      opacity: .3; mix-blend-mode: hard-light; animation: spin 5s linear infinite; pointer-events: none;
+      opacity: .13; mix-blend-mode: hard-light; animation: spin 7s linear infinite; pointer-events: none;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .meme {
       position: absolute; left: 0; top: 0; will-change: transform; image-rendering: pixelated; pointer-events: none;
-      border: 4px solid #000; outline: 3px solid #fff; box-shadow: 9px 9px 0 #ff00c8, -6px -6px 0 #00f0ff;
-      filter: saturate(2.4) contrast(1.6);
+      border: 5px solid #fff; outline: 3px solid #000; box-shadow: 9px 9px 0 #ff00c8;
+      filter: saturate(1.6) contrast(1.25);
     }
     div.meme { display: grid; place-items: center; background: #ff00c8; color: #ff0; font-size: 12vmin; -webkit-text-stroke: .05em #000; }
     .fire {
@@ -137,14 +173,26 @@
     }
     .fx { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
     .center { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
-    .stack { display: grid; justify-items: center; will-change: transform; }
+    .stack { position: relative; display: grid; justify-items: center; will-change: transform; }
+    .heromeme {
+      position: relative; width: min(70vw, 82vh); aspect-ratio: 4 / 3; overflow: hidden; background: #000;
+      border: 7px solid #fff; outline: 4px solid #000; box-shadow: 16px 16px 0 #ff00c8, -12px -12px 0 #00e5ff;
+    }
+    @media (orientation: portrait) { .heromeme { width: 86vw; aspect-ratio: 3 / 4; max-height: 64vh; } }
+    .heromeme img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
+      image-rendering: pixelated; filter: saturate(1.5) contrast(1.2);
+    }
+    .heromeme img.on { opacity: 1; }
     .big67 {
-      font-size: min(80vw, 62vh); line-height: .86; letter-spacing: -.02em; color: #fff;
-      -webkit-text-stroke: .045em #000; paint-order: stroke fill;
-      text-shadow: .05em .05em 0 #ff0033, -.05em -.04em 0 #00e5ff, .1em .11em 0 #000, 0 0 .2em #ff0;
+      position: absolute; top: -.38em; left: 50%; transform: translateX(-50%) rotate(-7deg);
+      font-size: min(30vw, 27vh); line-height: 1; letter-spacing: -.02em; color: #fff;
+      -webkit-text-stroke: .05em #000; paint-order: stroke fill;
+      text-shadow: .05em .05em 0 #ff0033, -.05em -.04em 0 #00e5ff, .09em .1em 0 #000;
     }
     .chant {
-      max-width: 92vw; margin-top: .1em; color: #faff00; font-size: min(9vw, 8vh); line-height: 1.05; text-align: center;
+      position: absolute; bottom: -.45em; left: 50%; transform: translateX(-50%) rotate(3deg); white-space: nowrap;
+      color: #faff00; font-size: min(9vw, 8vh); line-height: 1.05; text-align: center;
       -webkit-text-stroke: .08em #000; paint-order: stroke fill; text-shadow: .06em .06em 0 #ff00c8;
     }
     .pop {
@@ -170,7 +218,7 @@
     .ticker.bottom span { animation-direction: reverse; animation-duration: 4.1s; }
     @keyframes tick { to { transform: translateX(-50%); } }
     .grain {
-      position: absolute; inset: -160px; pointer-events: none; opacity: .5; mix-blend-mode: overlay;
+      position: absolute; inset: -160px; pointer-events: none; opacity: .22; mix-blend-mode: overlay;
       background-size: 160px 160px; image-rendering: pixelated; will-change: transform;
     }
     .flash { position: absolute; inset: 0; pointer-events: none; background: #fff; opacity: 0; }
@@ -182,42 +230,51 @@
   </style>
 </head>
 <body>
-  <div class="shell" id="cover">
-    <header class="masthead">
-      <div class="brand"><span class="mark" aria-hidden="true">AI</span> AI 设备性能检测</div>
-      <span class="mast-note mono">DEVICE / BENCHMARK 2026</span>
-    </header>
-    <main class="intro">
-      <div>
-        <p class="eyebrow">浏览器端性能基准</p>
-        <span class="badge">新增 · GTA VI 画质预测</span>
-        <h1><span>AI 设备</span>性能检测</h1>
-        <p class="blurb">约 6 秒测出 GPU、CPU 与真实帧率，并给出 GTA VI 推荐画质。检测期间会自动全屏，请保持页面在前台。</p>
-        <button class="start" id="start" type="button"><span>开始检测</span> <span class="start-icon" aria-hidden="true">⊕</span></button>
-        <div class="progress" id="progress" role="progressbar" aria-label="检测进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
-          <div class="fill" id="fill"></div>
-          <div class="readout"><span id="label">初始化检测环境…</span><span class="pct" id="percent">0%</span></div>
-        </div>
-        <p class="social">已有 <b>2,676,767</b> 台设备完成检测</p>
-        <noscript>请启用 JavaScript 以开始检测。</noscript>
+  <div class="site" id="cover">
+    <header class="wrap nav">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 32 32"><path d="M5 22 L11 13 L16 18 L22 7 L27 12" fill="none" stroke="#c8ff3e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        FrameLab <small>AI 设备性能检测</small>
       </div>
-      <section class="chart" aria-label="性能采样">
-        <div class="chart-head">
-          <span class="mono">帧时间监测</span>
-          <span class="mode mono" id="mode">等待检测</span>
+      <nav class="links" aria-hidden="true"><span>性能检测</span><span>显卡天梯</span><span>游戏画质预测</span><span>开发者</span></nav>
+      <span class="ver mono">v4.2 · <b>GTA VI 档位库已更新</b></span>
+    </header>
+    <main class="wrap hero">
+      <section>
+        <span class="kicker"><i></i>GTA VI 画质预测 · 新上线</span>
+        <h1>你的设备<br><em>能跑 GTA VI 吗？</em></h1>
+        <p class="lede">在浏览器里实测 GPU 光栅化、CPU 多线程与真实帧率，约 10 秒给出综合得分和推荐画质档位。免安装，所有计算都在本机完成。</p>
+        <div class="cta-row">
+          <button class="cta" id="start" type="button">开始检测 <span aria-hidden="true">→</span></button>
+          <span class="eta">约 10 秒 · 检测时自动全屏</span>
+        </div>
+        <ul class="trust">
+          <li>WebGL 2 实测</li><li>数据不出本机</li><li>累计 <b class="mono">2,676,767</b> 次检测</li>
+        </ul>
+        <noscript>请启用 JavaScript 以开始检测。</noscript>
+      </section>
+      <section class="card" id="console" aria-label="检测控制台">
+        <div class="card-head"><strong>检测控制台</strong><span class="status" id="mode">待机</span></div>
+        <div class="gauge-row">
+          <div class="gauge" id="progress" role="progressbar" aria-label="检测进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <svg viewBox="0 0 184 184" aria-hidden="true">
+              <defs><linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c8ff3e"/><stop offset="1" stop-color="#5ee1ff"/></linearGradient></defs>
+              <circle class="track" cx="92" cy="92" r="82"/>
+              <circle class="arc" id="arc" cx="92" cy="92" r="82"/>
+            </svg>
+            <div class="gauge-center"><span class="pct mono" id="percent">0%</span><span class="gauge-label" id="label">点击开始检测</span></div>
+          </div>
+          <dl class="stats">
+            <div><dt>平均帧率</dt><dd class="mono" id="fps">—</dd></div>
+            <div><dt>P95 帧时间</dt><dd class="mono" id="p95">—</dd></div>
+            <div><dt>综合得分</dt><dd class="mono hl" id="score">—</dd></div>
+            <div><dt>推荐画质</dt><dd id="tier">—</dd></div>
+          </dl>
         </div>
         <div class="plot" id="plot" aria-hidden="true"></div>
-        <div class="caption mono"><span>最近 24 帧</span><span id="scale">帧间隔 / ms</span></div>
-        <dl class="metrics">
-          <div><dt>平均帧率</dt><dd id="fps">—</dd></div>
-          <div><dt>P95 帧时间</dt><dd id="p95">—</dd></div>
-          <div><dt>浮点推理</dt><dd id="infer">—</dd></div>
-        </dl>
-        <dl class="scores">
-          <div class="score"><dt>综合得分</dt><dd id="score">----</dd></div>
-          <div class="score"><dt>GTA VI 推荐画质</dt><dd class="small" id="tier">等待检测</dd></div>
-        </dl>
-        <dl class="device">
+        <div class="plot-cap mono"><span>帧时间 · 最近 24 帧</span><span id="scale">ms</span></div>
+        <ul class="stages" id="stages"></ul>
+        <dl class="device mono">
           <dt>GPU</dt><dd id="d-gpu">读取中…</dd>
           <dt>CPU</dt><dd id="d-cpu">—</dd>
           <dt>内存</dt><dd id="d-mem">—</dd>
@@ -225,7 +282,17 @@
         </dl>
       </section>
     </main>
-    <footer class="footer mono"><span>渲染 · 帧时间 · 浮点推理</span><span>数据仅在本机计算，不会上传</span></footer>
+    <section class="wrap board" aria-label="最近检测">
+      <div class="board-head"><h2>最近检测</h2><span>实时更新 · 匿名展示</span></div>
+      <div class="rows">
+        <div class="row"><b>GeForce RTX 4070 SUPER</b><span>极致画质 <em class="mono">92 FPS</em></span></div>
+        <div class="row"><b>Apple M3 Pro</b><span>高画质 <em class="mono">61 FPS</em></span></div>
+        <div class="row"><b>骁龙 8 Gen 3</b><span>中画质 <em class="mono">44 FPS</em></span></div>
+        <div class="row"><b>Radeon RX 7800 XT</b><span>极致画质 <em class="mono">88 FPS</em></span></div>
+        <div class="row"><b>天玑 9300</b><span>中画质 <em class="mono">47 FPS</em></span></div>
+      </div>
+    </section>
+    <footer class="wrap foot"><span>© 2026 FrameLab · 浏览器端性能基准</span><span>检测结果仅供参考，以实际游戏表现为准</span></footer>
   </div>
 
   <div class="party" id="party" hidden aria-hidden="true">
@@ -235,7 +302,7 @@
       <div id="memes"></div>
       <video class="fire" id="fire" muted playsinline webkit-playsinline preload="auto" hidden></video>
       <canvas class="fx" id="fx"></canvas>
-      <div class="center"><div class="stack" id="stack"><div class="big67">67</div><div class="chant" id="chant">676767</div></div></div>
+      <div class="center"><div class="stack" id="stack"><div class="heromeme" id="hero"></div><div class="big67">67</div><div class="chant" id="chant">676767</div></div></div>
       <div id="pops"></div>
     </div>
     <div class="ticker top"><span id="t1"></span></div>
@@ -327,25 +394,38 @@
     $("d-cpu").textContent = CORES ? CORES + " 线程" : "—";
     $("d-mem").textContent = navigator.deviceMemory ? (navigator.deviceMemory >= 8 ? "≥ 8 GB" : navigator.deviceMemory + " GB") : "—";
     var sw = screen.width || window.innerWidth, sh = screen.height || window.innerHeight;
-    $("d-screen").textContent = Math.round(sw * dpr) + " × " + Math.round(sh * dpr);
+    $("d-screen").textContent = Math.round(sw * dpr) + " × " + Math.round(sh * dpr) + " @" + dpr + "x";
 
     // ================= 伪装页：检测流程 =================
-    var STEPS = [
-      [0, 0, "初始化检测环境…"], [450, 13, "GPU 着色器编译…"], [1300, 29, "CPU 多线程跑分…"],
-      [2300, 44, "内存带宽测试…"], [3200, 57, "AI 推理测试 (INT8)…"], [4000, 65, "匹配 GTA VI 画质档位…"],
-      [4500, 67, "正在生成报告…"],
+    var fpsNow = 60, inferNow = .2;
+    var STAGES = [
+      { name: "GPU 光栅化", end: 1400, val: function () { return Math.round(fpsNow) + " FPS"; } },
+      { name: "着色器编译", end: 2900, val: function () { return Math.round(38 + Math.random() * 50) + " ms"; } },
+      { name: "CPU 多线程", end: 4400, val: function () { return (CORES || 8) + " 线程"; } },
+      { name: "内存带宽", end: 5900, val: function () { return (18 + Math.random() * 30).toFixed(1) + " GB/s"; } },
+      { name: "AI 推理 (INT8)", end: 7300, val: function () { return inferNow < .05 ? "<0.05 ms" : inferNow.toFixed(2) + " ms"; } },
+      { name: "GTA VI 画质匹配", end: 1e9, val: function () { return "67"; } },
     ];
-    var HOLD = 4500, GO = 5800, MAX_WAIT = 15000;
-    var WAIT_LABELS = ["正在上传样本…", "正在生成报告…", "服务器排队中…"];
+    var CURVE = [[0, 0], [1400, 15], [2900, 30], [4400, 42], [5900, 53], [7300, 63], [7900, 67]];
+    var HOLD = 7900, GO = 9300, MAX_WAIT = 18000;
+    var WAIT_LABELS = ["正在生成报告…", "正在上传样本…", "服务器排队中…"];
     var plot = $("plot");
     var bars = [];
     for (var b = 0; b < 24; b++) bars.push(plot.appendChild(document.createElement("i")));
+    var stageEls = STAGES.map(function (s) {
+      var li = document.createElement("li");
+      li.innerHTML = '<span class="ico"></span><span></span><span class="val mono">等待</span>';
+      li.children[1].textContent = s.name;
+      $("stages").appendChild(li);
+      return li;
+    });
     var N = 48;
     var tensor = new Float32Array(N * N);
     for (var q = 0; q < tensor.length; q++) tensor[q] = (q % 17 - 8) / 8;
     var act = new Float32Array(tensor.length);
-    var started = false, lastPct = -1, lastLabel = "";
+    var started = false, lastPct = -1, lastLabel = "", stageAt = -1;
     var music = $("music");
+    var ARC = 515.2;
 
     function sampleInference() {
       var t0 = performance.now();
@@ -360,32 +440,46 @@
       var sorted = times.slice().sort(function (x, y) { return x - y; });
       var p95 = sorted[Math.ceil(sorted.length * .95) - 1];
       var mean = times.reduce(function (s, t) { return s + t; }, 0) / times.length;
-      $("fps").textContent = (1000 / mean).toFixed(1) + " FPS";
+      fpsNow = 1000 / mean;
+      $("fps").textContent = fpsNow.toFixed(1);
       $("p95").textContent = p95.toFixed(1) + " ms";
-      var inf = sampleInference();
-      $("infer").textContent = inf < .05 ? "<0.05 ms" : inf.toFixed(2) + " ms";
+      inferNow = sampleInference();
       var recent = times.slice(-bars.length);
       var scale = Math.max.apply(null, [33.3].concat(recent));
-      $("scale").textContent = "量程 0–" + scale.toFixed(1) + " ms";
+      $("scale").textContent = "0–" + scale.toFixed(0) + " ms";
       bars.forEach(function (bar, i) {
         var t = recent[i - bars.length + recent.length] || 0;
-        bar.style.setProperty("--level", (t / scale * 100) + "%");
+        bar.style.setProperty("--level", Math.max(4, t / scale * 100) + "%");
       });
+    }
+    function setStage(i) {
+      if (i === stageAt) return;
+      for (var s = 0; s < stageEls.length; s++) {
+        var li = stageEls[s];
+        if (s < i && !li.classList.contains("done")) {
+          li.className = "done";
+          li.children[2].textContent = STAGES[s].val();
+        } else if (s === i) { li.className = "run"; li.children[2].textContent = "测试中"; }
+      }
+      stageAt = i;
     }
     function showProgress(el) {
       var i = 1;
-      while (i < STEPS.length && STEPS[i][0] <= el) i++;
-      var pct, label;
-      if (i >= STEPS.length) { pct = 67; label = STEPS[STEPS.length - 1][2]; }
-      else {
-        var a = STEPS[i - 1], z = STEPS[i];
+      while (i < CURVE.length && CURVE[i][0] <= el) i++;
+      var pct = 67;
+      if (i < CURVE.length) {
+        var a = CURVE[i - 1], z = CURVE[i];
         pct = Math.floor(a[1] + (z[1] - a[1]) * (el - a[0]) / (z[0] - a[0]));
-        label = a[2];
       }
+      var si = 0;
+      while (si < STAGES.length - 1 && el >= STAGES[si].end) si++;
+      setStage(si);
+      var label = STAGES[si].name + "…";
+      if (el >= HOLD) label = "正在生成报告…";
       if (el > GO) label = WAIT_LABELS[Math.floor((el - GO) / 1600) % WAIT_LABELS.length];
       if (pct !== lastPct) {
         lastPct = pct;
-        $("fill").style.transform = "scaleX(" + pct / 100 + ")";
+        $("arc").style.strokeDashoffset = (ARC * (1 - pct / 100)).toFixed(1);
         $("percent").textContent = pct + "%";
         $("progress").setAttribute("aria-valuenow", pct);
       }
@@ -418,10 +512,14 @@
         if (mp && mp.catch) mp.catch(function () {});
       } catch (e) {}
 
-      $("start").hidden = true;
-      $("progress").hidden = false;
+      $("start").disabled = true;
+      $("start").firstChild.textContent = "检测中… ";
       $("mode").textContent = "实时采样";
+      $("mode").classList.add("live");
       $("tier").textContent = "计算中…";
+      setTimeout(function () {
+        try { $("console").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { $("console").scrollIntoView(); }
+      }, 350);
       var t0 = performance.now(), prev = 0, nextRead = 0, nextScore = 0, times = [];
       function step(now) {
         var el = Math.max(0, now - t0);
@@ -430,14 +528,14 @@
         if (el < HOLD) {
           if (prev && now - prev < 250) times.push(now - prev);
           if (times.length > 96) times.shift();
-          if (times.length >= 10 && now >= nextRead) { showMetrics(times); nextRead = now + 420; }
+          if (times.length >= 10 && now >= nextRead) { showMetrics(times); nextRead = now + 380; }
           if (now >= nextScore) { $("score").textContent = String(1000 + Math.floor(Math.random() * 8999)); nextScore = now + 70; }
         } else if ($("score").textContent !== "67") {
           $("score").textContent = "67";
           $("tier").textContent = "67";
           $("mode").textContent = "生成报告";
         }
-        if (el > HOLD + 700) $("percent").classList.add("twitch");
+        if (el > HOLD + 600) $("percent").classList.add("twitch");
         prev = now;
         requestAnimationFrame(step);
       }
@@ -548,6 +646,7 @@
     var Q = .4;  // 特效画布 0.4 倍分辨率，故意糊
     var W = 0, H = 0, memes = [], booms = [], parts = [], bolts = [];
     var kick = 0, beats = 0, lastBeat = null, revealAt = 0, lastFrame = 0, bgi = 0, chi = 0, mi = 0, invertUntil = 0;
+    var heroImgs = [], hi = 0, heroBorn = 0;
     var EMOJI = ["😂", "🔥", "💯", "😭", "🗿", "💀", "‼️", "6️⃣", "7️⃣", "🤣"];
     var COLORS = ["#ffee00", "#ff00c8", "#00f0ff", "#ff2a00", "#7dff00", "#ffffff"];
     var CHANTS = ["676767676767", "SIX SEVEN!!!", "检测结果：67", "6 7 6 7 6 7", "综合得分：67", "GTA VI 画质：67", "67 67 67 67", "你的设备：67"];
@@ -583,12 +682,31 @@
       } catch (e) {}
     }
 
-    function maxMemes() { return Math.min(W, H) < 700 ? 9 : 14; }
+    function maxMemes() { return Math.min(W, H) < 700 ? 6 : 9; }
+    function buildHero() {
+      var box = $("hero");
+      BG_ORDER.slice().reverse().forEach(function (idx) {
+        if (!A.imgs[idx]) return;
+        var im = document.createElement("img");
+        im.src = MEMES[idx]; im.alt = ""; im.draggable = false;
+        box.appendChild(im);
+        heroImgs.push(im);
+      });
+      if (!heroImgs.length) box.hidden = true;
+    }
+    function nextHero() {
+      if (!heroImgs.length) return;
+      heroImgs[hi % heroImgs.length].classList.remove("on");
+      hi++;
+      heroImgs[hi % heroImgs.length].classList.add("on");
+      heroBorn = performance.now();
+    }
+    function edgeX() { return (Math.random() < .5 ? rand(.04, .26) : rand(.74, .96)) * W; }
     function spawnMeme(x, y) {
       var idx = MEME_ORDER[mi++ % MEME_ORDER.length];
       var im = A.imgs[idx];
       var vmin = Math.min(W, H);
-      var w = vmin * (W < H ? rand(.4, .62) : rand(.24, .44));
+      var w = vmin * (W < H ? rand(.44, .62) : rand(.3, .44));
       var h = im ? w * im.naturalHeight / im.naturalWidth : w;
       if (h > H * .5) { w *= H * .5 / h; h = H * .5; }
       var el;
@@ -632,7 +750,7 @@
       d.textContent = text;
       var len = 0;
       for (var i = 0; i < text.length; i++) len += text.charCodeAt(i) > 255 ? 1 : .58;
-      var fs = Math.min(Math.min(W, H) * rand(.08, .13), W * .62 / Math.max(len, 1));
+      var fs = Math.min(Math.min(W, H) * rand(.06, .09), W * .55 / Math.max(len, 1));
       var half = fs * len / 2 + 10, lo = W * .06 + half, hi = W * .94 - half;
       if (x == null) x = rand(lo, Math.max(lo, hi));
       x = Math.min(Math.max(x, lo), Math.max(lo, hi));
@@ -665,35 +783,36 @@
 
     function onBeat(k) {
       world.setAttribute("data-tint", k % 4);
-      explode(rand(.1, .9) * W, rand(.15, .85) * H);
-      if (k % 2 === 0) { explode(rand(.1, .9) * W, rand(.15, .85) * H, rand(.5, 1)); nextBackdrop(); }
-      if (k % 2 === 1) pop(pick(POPS));
-      if (k % 2 === 0 && k > 2) spawnMeme();
-      if (k % 4 === 0) { fireball(); $("chant").textContent = CHANTS[chi++ % CHANTS.length]; }
-      if (k % 4 === 2) bolt();
-      emojiBurst(rand(.2, .8) * W, rand(.3, .7) * H, 3, .7);
+      if (k % 2 === 0) { nextHero(); explode(edgeX(), rand(.15, .85) * H, rand(.3, .5)); }
+      if (k % 4 === 1) nextBackdrop();
+      if (k % 4 === 3) pop(pick(POPS));
+      if (k % 2 === 1 && k > 2) spawnMeme();
+      if (k % 4 === 0) $("chant").textContent = CHANTS[chi++ % CHANTS.length];
+      if (k % 8 === 4) fireball();
+      if (k % 2 === 1) emojiBurst(edgeX(), rand(.3, .7) * H, 2, .6);
       if (k > 0 && k % 16 === 0) drop();
     }
     function drop() {
-      kick = 1;
+      kick = .8;
       invertUntil = performance.now() + BEAT * 1000;
       world.classList.add("inv");
-      flash(.5, pick(["#ff00c8", "#ffee00", "#00f0ff"]));
       boom();
       buzz([180, 60, 180]);
-      bolt(); bolt();
-      for (var i = 0; i < 4; i++) explode(rand(.1, .9) * W, rand(.1, .9) * H, rand(.6, 1.1));
-      emojiBurst(W / 2, H / 2, 24, 1.3);
-      pop("67", W / 2, H * .3);
+      bolt();
+      explode(edgeX(), rand(.2, .8) * H, rand(.5, .8));
+      explode(edgeX(), rand(.2, .8) * H, rand(.5, .8));
+      emojiBurst(W / 2, H / 2, 12, 1.2);
+      spawnMeme();
     }
     function smash(x, y) {
       kick = 1;
       boom();
       airhorn(0, true);
       buzz(90);
-      explode(x, y, rand(.7, 1.1));
-      emojiBurst(x, y, 14, 1);
+      explode(x, y, rand(.5, .8));
+      emojiBurst(x, y, 8, 1);
       spawnMeme(x, y);
+      nextHero();
       if (Math.random() < .6) pop(pick(POPS), x, y);
       if (usingElement && music.paused) { var p = music.play(); if (p && p.catch) p.catch(function () {}); }
       if (ctx && ctx.state === "suspended") { try { ctx.resume(); } catch (e) {} }
@@ -704,7 +823,7 @@
       // 冲击放射线
       if (kick > .12) {
         fx.save();
-        fx.globalAlpha = Math.min(1, kick);
+        fx.globalAlpha = Math.min(.45, kick * .5);
         fx.fillStyle = "#fff";
         var cx = W / 2, cy = H / 2, R = Math.max(W, H);
         for (var i = 0; i < 28; i++) {
@@ -764,12 +883,12 @@
       kick *= Math.pow(.015, dt);
       if (invertUntil && now > invertUntil) { invertUntil = 0; world.classList.remove("inv"); }
 
-      var amp = 3 + 9 * pulse * pulse + 30 * kick;
+      var amp = 2 + 6 * pulse * pulse + 22 * kick;
       world.style.transform = "translate3d(" + rand(-amp, amp).toFixed(1) + "px," + rand(-amp, amp).toFixed(1) + "px,0) rotate(" +
-        rand(-1, 1) * (.4 + 2.5 * kick) + "deg) scale(" + (1 + .025 * pulse + .05 * kick) + ")";
-      var sc = 1 + .2 * pulse + .45 * kick;
-      stack.style.transform = "rotate(" + (Math.sin(t * 2.3) * 9 + (beats % 2 ? 5 : -5)) + "deg) scale(" + sc + ") translate(" +
-        (Math.sin(t * 5.1) * 2) + "%," + (Math.cos(t * 3.7) * 2) + "%)";
+        rand(-1, 1) * (.3 + 2 * kick) + "deg) scale(" + (1 + .02 * pulse + .04 * kick) + ")";
+      var hage = (now - heroBorn) / 1000;
+      var sc = (hage < .16 ? 1.35 - .35 * hage / .16 : 1) * (1 + .07 * pulse + .15 * kick);
+      stack.style.transform = "rotate(" + (Math.sin(t * 2.3) * 4 + (beats % 2 ? 2.5 : -2.5)) + "deg) scale(" + sc.toFixed(3) + ")";
 
       for (var i = 0; i < memes.length; i++) {
         var m = memes[i];
@@ -814,14 +933,17 @@
       if (A.fireURL) fire.src = A.fireURL; else fire.src = FIRE;
       fire.addEventListener("ended", function () { fire.hidden = true; });
       nextBackdrop();
+      buildHero();
+      nextHero();
       $("t1").textContent = "67 6767676767676767676767676767 SIX SEVEN 67 ".repeat(10);
       $("t2").textContent = "检测结果：67 · 综合得分：67 · GTA VI 画质：67 · ".repeat(8);
       zoom67(origin);
       flash(1);
       kick = 1;
-      for (var i = 0; i < 5; i++) (function (i) { setTimeout(function () { spawnMeme(); }, 90 + i * 130); })(i);
-      explode(W / 2, H / 2, 1.2);
-      emojiBurst(W / 2, H / 2, 30, 1.4);
+      for (var i = 0; i < 4; i++) (function (i) { setTimeout(function () { spawnMeme(); }, 90 + i * 150); })(i);
+      explode(edgeX(), H * .3, .8);
+      explode(edgeX(), H * .7, .8);
+      emojiBurst(W / 2, H / 2, 16, 1.3);
 
       var titles = ["67 67 67 67 67 67", "6 7 6 7 6 7 6 7", "🔥67🔥67🔥67🔥", "SIX SEVEN!!!"], ti = 0;
       setInterval(function () { document.title = titles[ti++ % titles.length]; }, 320);
