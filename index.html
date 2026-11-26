@@ -147,30 +147,30 @@
       -webkit-tap-highlight-color: transparent; cursor: crosshair;
     }
     .world { position: absolute; inset: -6%; overflow: hidden; will-change: transform; background: #2a0030; }
-    .world.inv { filter: invert(1) hue-rotate(180deg) saturate(3); }
-    .bg {
-      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated;
-      filter: blur(6px) saturate(2.6) contrast(1.5) brightness(.42); transform: scale(1.1);
-    }
-    .world[data-tint="1"] .bg { filter: blur(6px) hue-rotate(70deg) saturate(3) contrast(1.5) brightness(.42); transform: scale(1.1) scaleX(-1); }
-    .world[data-tint="2"] .bg { filter: blur(6px) sepia(.6) saturate(4) contrast(1.6) brightness(.45); transform: scale(1.25); }
-    .world[data-tint="3"] .bg { filter: blur(6px) hue-rotate(200deg) saturate(3) contrast(1.5) brightness(.4); transform: scale(1.15) rotate(4deg); }
+    /* 性能：背景不用 blur/filter，靠一层半透明色块压暗和变色；整个现场没有 mix-blend-mode */
+    .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; transform: scale(1.1); }
+    .world[data-tint="1"] .bg { transform: scale(1.1) scaleX(-1); }
+    .world[data-tint="2"] .bg { transform: scale(1.25); }
+    .world[data-tint="3"] .bg { transform: scale(1.15) rotate(4deg); }
+    .shade { position: absolute; inset: 0; background: rgba(24, 0, 34, .64); pointer-events: none; }
+    .world[data-tint="1"] .shade { background: rgba(0, 12, 48, .62); }
+    .world[data-tint="2"] .shade { background: rgba(48, 0, 4, .6); }
+    .world[data-tint="3"] .shade { background: rgba(0, 30, 12, .62); }
+    .world.inv .shade { background: rgba(255, 0, 200, .42); }
+    .world.inv .bg { transform: scale(1.35) scaleX(-1); }
     .rays {
-      position: absolute; left: 50%; top: 50%; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax;
+      position: absolute; left: 50%; top: 50%; width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax;
       background: repeating-conic-gradient(#ffee00 0 9deg, transparent 9deg 18deg, #ff00c8 18deg 27deg, transparent 27deg 36deg);
-      opacity: .13; mix-blend-mode: hard-light; animation: spin 7s linear infinite; pointer-events: none;
+      opacity: .1; animation: spin 7s linear infinite; pointer-events: none; will-change: transform;
     }
+    .lite .rays, .lite .grain { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .meme {
       position: absolute; left: 0; top: 0; will-change: transform; image-rendering: pixelated; pointer-events: none;
       border: 5px solid #fff; outline: 3px solid #000; box-shadow: 9px 9px 0 #ff00c8;
-      filter: saturate(1.6) contrast(1.25);
     }
     div.meme { display: grid; place-items: center; background: #ff00c8; color: #ff0; font-size: 12vmin; -webkit-text-stroke: .05em #000; }
-    .fire {
-      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;
-      mix-blend-mode: screen; filter: saturate(2) contrast(1.5) brightness(.9);
-    }
+    .fire { position: absolute; left: 0; top: 0; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
     .fx { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
     .center { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
     .stack { position: relative; display: grid; justify-items: center; will-change: transform; }
@@ -180,10 +180,9 @@
     }
     @media (orientation: portrait) { .heromeme { width: 86vw; aspect-ratio: 3 / 4; max-height: 64vh; } }
     .heromeme img {
-      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
-      image-rendering: pixelated; filter: saturate(1.5) contrast(1.2);
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; image-rendering: pixelated;
     }
-    .heromeme img.on { opacity: 1; }
+    .heromeme img.on { display: block; }
     .big67 {
       position: absolute; top: -.38em; left: 50%; transform: translateX(-50%) rotate(-7deg);
       font-size: min(30vw, 27vh); line-height: 1; letter-spacing: -.02em; color: #fff;
@@ -218,7 +217,7 @@
     .ticker.bottom span { animation-direction: reverse; animation-duration: 4.1s; }
     @keyframes tick { to { transform: translateX(-50%); } }
     .grain {
-      position: absolute; inset: -160px; pointer-events: none; opacity: .22; mix-blend-mode: overlay;
+      position: absolute; inset: -160px; pointer-events: none; opacity: .09;
       background-size: 160px 160px; image-rendering: pixelated; will-change: transform;
     }
     .flash { position: absolute; inset: 0; pointer-events: none; background: #fff; opacity: 0; }
@@ -298,9 +297,10 @@
   <div class="party" id="party" hidden aria-hidden="true">
     <div class="world" id="world">
       <img class="bg" id="bg" alt="">
+      <div class="shade"></div>
       <div class="rays"></div>
       <div id="memes"></div>
-      <video class="fire" id="fire" muted playsinline webkit-playsinline preload="auto" hidden></video>
+      <video class="fire" id="fire" muted playsinline webkit-playsinline preload="auto"></video>
       <canvas class="fx" id="fx"></canvas>
       <div class="center"><div class="stack" id="stack"><div class="heromeme" id="hero"></div><div class="big67">67</div><div class="chant" id="chant">676767</div></div></div>
       <div id="pops"></div>
@@ -545,6 +545,7 @@
 
     // ================= 声音：放大 + 削波失真 =================
     var bus = null, clock = null, usingElement = false;
+    var noiseBuf = null;
     function shaperCurve(k) {
       var n = 2048, curve = new Float32Array(n), norm = Math.tanh(k);
       for (var i = 0; i < n; i++) { var x = i * 2 / (n - 1) - 1; curve[i] = Math.tanh(k * x) / norm; }
@@ -607,9 +608,12 @@
         g.gain.exponentialRampToValueAtTime(1.8, at + .012);
         g.gain.exponentialRampToValueAtTime(.001, at + 1.2);
         o.connect(g); g.connect(bus); o.start(at); o.stop(at + 1.25);
-        var len = Math.floor(ctx.sampleRate * .35), nb = ctx.createBuffer(1, len, ctx.sampleRate), d = nb.getChannelData(0);
-        for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
-        var ns = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), ng = ctx.createGain();
+        if (!noiseBuf) {
+          var len = Math.floor(ctx.sampleRate * .35), d;
+          noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate); d = noiseBuf.getChannelData(0);
+          for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+        }
+        var nb = noiseBuf, ns = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), ng = ctx.createGain();
         ns.buffer = nb; lp.type = "lowpass"; lp.frequency.value = 1400; ng.gain.value = 1.2;
         ns.connect(lp); lp.connect(ng); ng.connect(bus); ns.start(at);
       } catch (e) {}
@@ -647,6 +651,13 @@
     var W = 0, H = 0, memes = [], booms = [], parts = [], bolts = [];
     var kick = 0, beats = 0, lastBeat = null, revealAt = 0, lastFrame = 0, bgi = 0, chi = 0, mi = 0, invertUntil = 0;
     var heroImgs = [], hi = 0, heroBorn = 0;
+    // 手机默认精简模式；桌面端如果实测掉帧也会自动切过去
+    var LITE = false;
+    try { LITE = matchMedia("(pointer: coarse)").matches || Math.min(screen.width || innerWidth, screen.height || innerHeight) < 600; } catch (e) {}
+    var STATIC_MEMES = [0, 2, 4, 6, 7];          // 漂浮的小图在精简模式下只用静态图，动图只放在中间大卡片
+    var fireOn = false, fireBox = null, fireCv = null, fireCtx = null;
+    var perfN = 0, perfSum = 0, frameNo = 0, statSum = 0, statMax = 0;
+    var emojiCache = {};
     var EMOJI = ["😂", "🔥", "💯", "😭", "🗿", "💀", "‼️", "6️⃣", "7️⃣", "🤣"];
     var COLORS = ["#ffee00", "#ff00c8", "#00f0ff", "#ff2a00", "#7dff00", "#ffffff"];
     var CHANTS = ["676767676767", "SIX SEVEN!!!", "检测结果：67", "6 7 6 7 6 7", "综合得分：67", "GTA VI 画质：67", "67 67 67 67", "你的设备：67"];
@@ -682,7 +693,24 @@
       } catch (e) {}
     }
 
-    function maxMemes() { return Math.min(W, H) < 700 ? 6 : 9; }
+    function maxMemes() { return LITE ? 4 : 8; }
+    function maxParts() { return LITE ? 24 : 60; }
+    function setLite() {
+      LITE = true;
+      party.classList.add("lite");
+      while (memes.length > maxMemes()) memes.shift().el.remove();
+      if (parts.length > maxParts()) parts.splice(0, parts.length - maxParts());
+    }
+    function emojiSprite(ch) {
+      var c = emojiCache[ch];
+      if (c) return c;
+      c = document.createElement("canvas"); c.width = c.height = 40;
+      var g = c.getContext("2d");
+      g.textAlign = "center"; g.textBaseline = "middle"; g.font = "32px sans-serif";
+      g.fillText(ch, 20, 22);
+      emojiCache[ch] = c;
+      return c;
+    }
     function buildHero() {
       var box = $("hero");
       BG_ORDER.slice().reverse().forEach(function (idx) {
@@ -703,7 +731,8 @@
     }
     function edgeX() { return (Math.random() < .5 ? rand(.04, .26) : rand(.74, .96)) * W; }
     function spawnMeme(x, y) {
-      var idx = MEME_ORDER[mi++ % MEME_ORDER.length];
+      var order = LITE ? STATIC_MEMES : MEME_ORDER;
+      var idx = order[mi++ % order.length];
       var im = A.imgs[idx];
       var vmin = Math.min(W, H);
       var w = vmin * (W < H ? rand(.44, .62) : rand(.3, .44));
@@ -733,11 +762,12 @@
       if (booms.length > 14) booms.shift();
     }
     function emojiBurst(x, y, n, power) {
+      if (LITE) n = Math.ceil(n / 2);
       for (var i = 0; i < n; i++) {
         var a = rand(0, Math.PI * 2), v = rand(200, 700) * (power || 1);
         parts.push({ ch: pick(EMOJI), x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 250, r: rand(0, 6), vr: rand(-8, 8), s: rand(30, 80), life: rand(1, 1.8) });
       }
-      if (parts.length > 70) parts.splice(0, parts.length - 70);
+      if (parts.length > maxParts()) parts.splice(0, parts.length - maxParts());
     }
     function bolt() {
       var x = rand(.1, .9) * W, y = 0, pts = [[x, y]];
@@ -766,15 +796,37 @@
       flashEl.style.background = color || "#fff";
       if (flashEl.animate) flashEl.animate([{ opacity: strength }, { opacity: 0 }], { duration: 260, easing: "ease-out" });
     }
+    // 火球不再用全屏 mix-blend-mode：把视频缩到 128px 小画布，按亮度转成透明度，再画进低分辨率特效层
     function fireball() {
       if (!fire.src) return;
       try {
-        fire.hidden = false;
+        if (!fireCv) {
+          fireCv = document.createElement("canvas"); fireCv.width = 128; fireCv.height = 103;
+          fireCtx = fireCv.getContext("2d", { willReadFrequently: true });
+        }
+        var w = W * rand(.9, 1.4), h = w * 514 / 640;
+        fireBox = { x: rand(.3, .7) * W - w / 2, y: rand(.35, .65) * H - h / 2, w: w, h: h, flip: Math.random() < .5 };
         fire.currentTime = 0;
-        fire.style.transform = "translate(" + rand(-20, 20).toFixed(0) + "%," + rand(-15, 15).toFixed(0) + "%) scale(" + rand(1.1, 1.6).toFixed(2) + ") scaleX(" + (Math.random() < .5 ? -1 : 1) + ")";
         var p = fire.play();
-        if (p && p.catch) p.catch(function () {});
-      } catch (e) {}
+        fireOn = true;
+        if (p && p.catch) p.catch(function () { fireOn = false; });
+      } catch (e) { fireOn = false; }
+    }
+    function drawFire() {
+      if (!fireOn || fire.readyState < 2) return;
+      try {
+        fireCtx.drawImage(fire, 0, 0, 128, 103);
+        var img = fireCtx.getImageData(0, 0, 128, 103), d = img.data;
+        for (var i = 0; i < d.length; i += 4) {
+          var m = d[i] > d[i + 1] ? d[i] : d[i + 1];
+          if (d[i + 2] > m) m = d[i + 2];
+          d[i + 3] = m < 24 ? 0 : (m > 200 ? 255 : (m - 24) * 1.45);
+        }
+        fireCtx.putImageData(img, 0, 0);
+        var b = fireBox;
+        if (b.flip) { fx.save(); fx.translate(b.x + b.w, b.y); fx.scale(-1, 1); fx.drawImage(fireCv, 0, 0, b.w, b.h); fx.restore(); }
+        else fx.drawImage(fireCv, b.x, b.y, b.w, b.h);
+      } catch (e) { fireOn = false; }
     }
     function nextBackdrop() {
       var idx = BG_ORDER[bgi++ % BG_ORDER.length];
@@ -820,6 +872,7 @@
 
     function draw(now, dt) {
       fx.clearRect(0, 0, W, H);
+      drawFire();
       // 冲击放射线
       if (kick > .12) {
         fx.save();
@@ -858,18 +911,16 @@
         fx.drawImage(s.image, f * s.size, 0, s.size, s.size, e.x - e.d / 2, e.y - e.d / 2, e.d, e.d);
       }
       // 表情包粒子
-      fx.textAlign = "center"; fx.textBaseline = "middle";
       for (var p = parts.length - 1; p >= 0; p--) {
         var pt = parts[p];
         pt.life -= dt;
         if (pt.life <= 0) { parts.splice(p, 1); continue; }
         pt.vy += 900 * dt; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.r += pt.vr * dt;
-        fx.save();
-        fx.translate(pt.x, pt.y); fx.rotate(pt.r);
-        fx.font = Math.round(pt.s) + "px sans-serif";
-        fx.fillText(pt.ch, 0, 0);
-        fx.restore();
+        var cs = Math.cos(pt.r), sn = Math.sin(pt.r);
+        fx.setTransform(cs * Q, sn * Q, -sn * Q, cs * Q, pt.x * Q, pt.y * Q);
+        fx.drawImage(emojiSprite(pt.ch), -pt.s / 2, -pt.s / 2, pt.s, pt.s);
       }
+      fx.setTransform(Q, 0, 0, Q, 0, 0);
     }
 
     function frame(now) {
@@ -899,8 +950,19 @@
         var s = (age < .22 ? 3.2 - 2.2 * age / .22 : 1) * (1 + .14 * pulse);
         m.el.style.transform = "translate3d(" + m.x.toFixed(1) + "px," + m.y.toFixed(1) + "px,0) rotate(" + m.r.toFixed(1) + "deg) scale(" + s.toFixed(3) + ")";
       }
-      grain.style.transform = "translate3d(" + Math.floor(rand(0, 160)) + "px," + Math.floor(rand(0, 160)) + "px,0)";
+      frameNo++;
+      statSum += dt; if (dt > statMax) statMax = dt;
+      if (frameNo % 120 === 0) {
+        party.setAttribute("data-fps", (120 / statSum).toFixed(1) + " fps, worst " + (statMax * 1000).toFixed(0) + " ms" + (LITE ? ", lite" : ""));
+        statSum = 0; statMax = 0;
+      }
+      if (!LITE && frameNo % 3 === 0) grain.style.transform = "translate3d(" + Math.floor(rand(0, 160)) + "px," + Math.floor(rand(0, 160)) + "px,0)";
       draw(now, dt);
+      // 自动降级：开场 1 秒后统计 90 帧，平均低于 ~42fps 就切精简模式
+      if (!LITE && frameNo > 60 && perfN < 90) {
+        perfSum += dt; perfN++;
+        if (perfN === 90 && perfSum / perfN > 1 / 42) setLite();
+      }
       requestAnimationFrame(frame);
     }
 
@@ -924,14 +986,15 @@
       party.hidden = false;
       document.body.classList.add("revealed");
       window.scrollTo(0, 0);
+      if (LITE) party.classList.add("lite");
       measure();
-      makeGrain();
+      if (!LITE) makeGrain();
       startAudio();
       boom();
       airhorn();
       buzz([300, 60, 300, 60, 700]);
       if (A.fireURL) fire.src = A.fireURL; else fire.src = FIRE;
-      fire.addEventListener("ended", function () { fire.hidden = true; });
+      fire.addEventListener("ended", function () { fireOn = false; });
       nextBackdrop();
       buildHero();
       nextHero();
